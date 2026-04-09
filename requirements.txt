@@ -1,0 +1,20 @@
+# Gmail API
+google-auth>=2.28.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.120.0
+
+# AI (OpenAI for summaries)
+openai>=1.30.0
+
+# Attachment parsing
+pdfplumber>=0.10.4
+openpyxl>=3.1.2
+pandas>=2.2.2
+xlrd>=2.0.1
+
+# Utilities
+python-dotenv>=1.0.1
+rich>=13.7.1
+html2text>=2024.2.26
+python-dateutil>=2.9.0

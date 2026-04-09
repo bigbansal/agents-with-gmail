@@ -1,0 +1,137 @@
+{
+  "skill_id": "gmail",
+  "version": "1.0.0",
+  "display_name": "Gmail",
+  "description": "Send, read, search and summarise Gmail messages. Parses PDF and Excel attachments with AI-powered summaries.",
+  "author": "Gourav Bansal",
+  "entry_class": "skills.gmail_skill.GmailSkill",
+  "actions": [
+    {
+      "name": "send_email",
+      "description": "Send an email from the authenticated Gmail account.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "to":      { "type": "string", "description": "Recipient email address" },
+          "subject": { "type": "string", "description": "Email subject line" },
+          "body":    { "type": "string", "description": "Plain-text body of the email" },
+          "cc":      { "type": "string", "description": "Comma-separated CC addresses (optional)" },
+          "bcc":     { "type": "string", "description": "Comma-separated BCC addresses (optional)" }
+        },
+        "required": ["to", "subject", "body"]
+      }
+    },
+    {
+      "name": "read_email",
+      "description": "Read a specific email by its Gmail message ID.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id": { "type": "string", "description": "Gmail message ID" }
+        },
+        "required": ["message_id"]
+      }
+    },
+    {
+      "name": "search_emails",
+      "description": "Search emails with Gmail query syntax, e.g. 'is:unread from:boss@co.com'.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query":       { "type": "string",  "description": "Gmail search query" },
+          "max_results": { "type": "integer", "description": "Max emails to return (default 10)" }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "list_unread",
+      "description": "List unread inbox messages.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "max_results": { "type": "integer", "description": "Max emails to return (default 10)" }
+        }
+      }
+    },
+    {
+      "name": "summarize_email",
+      "description": "AI-powered summary of one email and all its attachments.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id":           { "type": "string",  "description": "Gmail message ID" },
+          "include_attachments":  { "type": "boolean", "description": "Summarise attachments too (default true)" }
+        },
+        "required": ["message_id"]
+      }
+    },
+    {
+      "name": "day_summary",
+      "description": "AI briefing of all emails for a given day, categorised by priority.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "date_str": { "type": "string", "description": "Date YYYY-MM-DD (default: today)" }
+        }
+      }
+    },
+    {
+      "name": "read_attachment",
+      "description": "Extract and optionally summarise the text in a PDF, Excel or CSV attachment.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id": { "type": "string",  "description": "Gmail message ID" },
+          "filename":   { "type": "string",  "description": "Exact filename of the attachment" },
+          "summarize":  { "type": "boolean", "description": "Return AI summary (default false)" }
+        },
+        "required": ["message_id", "filename"]
+      }
+    },
+    {
+      "name": "reply_email",
+      "description": "Reply to an existing email thread.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id": { "type": "string", "description": "ID of the message to reply to" },
+          "body":       { "type": "string", "description": "Reply body text" }
+        },
+        "required": ["message_id", "body"]
+      }
+    },
+    {
+      "name": "mark_read",
+      "description": "Mark one or more messages as read.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of Gmail message IDs"
+          }
+        },
+        "required": ["message_ids"]
+      }
+    },
+    {
+      "name": "delete_email",
+      "description": "Move a message to the Trash.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id": { "type": "string", "description": "Gmail message ID" }
+        },
+        "required": ["message_id"]
+      }
+    }
+  ],
+  "env_vars": [
+    { "key": "OPENAI_API_KEY",       "description": "OpenAI API key for AI summaries",         "required": true },
+    { "key": "GMAIL_CREDENTIALS_PATH","description": "Path to OAuth2 credentials JSON",         "required": true },
+    { "key": "GMAIL_TOKEN_PATH",     "description": "Path where the OAuth token is cached",     "required": false },
+    { "key": "OPENAI_MODEL",         "description": "OpenAI model for summaries (default gpt-4o)", "required": false }
+  ]
+}
