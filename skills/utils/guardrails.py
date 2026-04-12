@@ -185,7 +185,12 @@ def scrub(text: str) -> tuple[str, list[str]]:
 
 def scrub_text(text: str) -> str:
     """Convenience wrapper – returns only the scrubbed text."""
-    result, _ = scrub(text)
+    result, findings = scrub(text)
+    # Log every scrub so the payload is always visible in openai_payloads.log
+    # (scrub_text is the single choke-point called from ALL paths:
+    #  Codex direct action calls, agent.py tool results, summarizer._chat)
+    label = f"scrub_text() [{', '.join(findings) if findings else 'no changes'}]"
+    _log_payload(label, result)
     return result
 
 
