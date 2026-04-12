@@ -31,6 +31,7 @@ load_dotenv()
 # ── Add project root to sys.path so `skills` is importable ───────────────────
 sys.path.insert(0, os.path.dirname(__file__))
 from skills.gmail_skill import GmailSkill  # noqa: E402
+from skills.utils.guardrails import scrub_messages, scrub_text  # noqa: E402
 
 console = Console()
 
@@ -118,14 +119,15 @@ def run_agent():
         if not user_input:
             continue
 
-        conversation.append({"role": "user", "content": user_input})
+        # Scrub user input before it enters the conversation
+        conversation.append({"role": "user", "content": scrub_text(user_input)})
 
         # ── Agentic loop: keep calling OpenAI until no more tool calls ─────────
         while True:
             with console.status("[dim]Thinking …[/dim]", spinner="dots"):
                 response = client.chat.completions.create(
                     model=MODEL,
-                    messages=conversation,
+                    messages=scrub_messages(conversation),  # guardrail: scrub before sending
                     tools=tools,
                     tool_choice="auto",
                 )
@@ -162,11 +164,12 @@ def run_agent():
                 with console.status(f"[dim]Running {fn_name} …[/dim]", spinner="dots"):
                     tool_result = _execute_tool(skill, fn_name, fn_args)
 
+                # Scrub tool result (email content) before storing in conversation
                 conversation.append(
                     {
                         "role": "tool",
                         "tool_call_id": tc.id,
-                        "content": tool_result,
+                        "content": scrub_text(tool_result),
                     }
                 )
 

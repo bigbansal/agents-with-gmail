@@ -10,6 +10,8 @@ from typing import Any
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from .guardrails import scrub_text
+
 load_dotenv()
 
 _client: OpenAI | None = None
@@ -61,21 +63,21 @@ def summarize_text(text: str, context: str = "an email attachment") -> str:
     )
     user = (
         f"Please summarise the following content from {context}:\n\n"
-        + _truncate(text)
+        + _truncate(scrub_text(text))
     )
     return _chat(system, user)
 
 
 def summarize_email(msg: dict[str, Any]) -> str:
     """Return a one-paragraph summary of a single email."""
-    body = msg.get("body") or msg.get("snippet", "")
+    body = scrub_text(msg.get("body") or msg.get("snippet", ""))
     system = (
         "You are a helpful email assistant. Summarise the email in 2-4 sentences, "
         "highlighting the sender's main ask or point and any deadlines or actions required."
     )
     user = textwrap.dedent(f"""\
-        Subject : {msg.get('subject', '(none)')}
-        From    : {msg.get('sender', '')}
+        Subject : {scrub_text(msg.get('subject', '(none)'))}
+        From    : {scrub_text(msg.get('sender', ''))}
         Date    : {msg.get('date', '')}
 
         Body:
@@ -95,10 +97,12 @@ def summarize_emails(messages: list[dict[str, Any]], period: str = "today") -> s
     # Build a compact digest to stay within context window
     digest_lines: list[str] = []
     for i, m in enumerate(messages, 1):
-        snippet = (m.get("body") or m.get("snippet", ""))[:400].replace("\n", " ")
+        snippet = scrub_text(
+            (m.get("body") or m.get("snippet", ""))[:400].replace("\n", " ")
+        )
         digest_lines.append(
-            f"{i}. [{m.get('date', '')}] From: {m.get('sender', '')} | "
-            f"Subject: {m.get('subject', '')} | Preview: {snippet}"
+            f"{i}. [{m.get('date', '')}] From: {scrub_text(m.get('sender', ''))} | "
+            f"Subject: {scrub_text(m.get('subject', ''))} | Preview: {snippet}"
         )
     digest = "\n".join(digest_lines)
 
