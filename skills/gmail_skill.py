@@ -27,6 +27,7 @@ from dotenv import load_dotenv
 from .utils.gmail_auth import get_gmail_service
 from .utils.email_parser import list_messages, parse_message, fetch_attachment_bytes
 from .utils.attachment_reader import read_attachment as _read_attachment_bytes
+from .utils.guardrails import scrub_text as _scrub_text
 from .utils.summarizer import (
     summarize_email as _ai_summarize_email,
     summarize_emails as _ai_summarize_emails,
@@ -150,9 +151,28 @@ class GmailSkill:
 
     # ── Codex dispatcher ──────────────────────────────────────────────────────
 
+    # ── Sensitive-data scrubber ────────────────────────────────────────────
+
+    @staticmethod
+    def _scrub(value: Any) -> Any:
+        """
+        Recursively scrub strings inside any dict / list / str so that
+        sensitive data is redacted before the result is returned to the
+        Codex CLI (or any other caller) and forwarded to OpenAI.
+        """
+        if isinstance(value, str):
+            return _scrub_text(value)
+        if isinstance(value, dict):
+            return {k: GmailSkill._scrub(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [GmailSkill._scrub(item) for item in value]
+        return value
+
     def run(self, action: str, **kwargs) -> Any:
         """
         Generic dispatcher used by Codex agent loop.
+        All returned data is scrubbed for sensitive content before being
+        handed back to the caller (Codex CLI, agent.py, etc.).
 
         skill.run("send_email", to="a@b.com", subject="Hi", body="Hey")
         """
@@ -162,7 +182,10 @@ class GmailSkill:
                 f"Unknown Gmail skill action: '{action}'. "
                 f"Available: {[a['name'] for a in self.ACTIONS]}"
             )
-        return handler(**kwargs)
+        result = handler(**kwargs)
+        # Scrub BEFORE returning so no path (Codex CLI, agent.py, etc.)
+        # can forward raw sensitive data to OpenAI.
+        return self._scrub(result)
 
     # ── Actions ───────────────────────────────────────────────────────────────
 
