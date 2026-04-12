@@ -1,14 +1,14 @@
 ---
-name: gmail
-display_name: Gmail
+name: gmailai
+display_name: Gmail-AI
 version: 1.0.0
 description: Send, read, search and summarise Gmail. Reads PDF and Excel attachments with AI summaries.
 author: Gourav Bansal
-invocation: $gmail
-tags: [email, gmail, productivity, pdf, excel, attachments]
+invocation: $gmailAi
+tags: [email, gmail, gmailai productivity, pdf, excel, attachments]
 ---
 
-# Gmail Skill
+# Gmail-AI Skill
 
 Use this skill to interact with Gmail — send mail, read mail, search your inbox, get AI summaries of emails and attachments (PDF, Excel, CSV).
 
@@ -35,7 +35,7 @@ On first use, a browser window opens once for Gmail OAuth consent. After that it
 
 ## How to invoke
 
-Type `$gmail` in the Codex composer, or just describe what you want — Codex will auto-select this skill when your prompt is about Gmail.
+Type `$gmailAi` in the Codex composer, or just describe what you want — Codex will auto-select this skill when your prompt is about Gmail.
 
 ---
 
