@@ -142,6 +142,21 @@ class GmailSkill:
 
     def __init__(self):
         self._service = None  # lazy initialisation
+        # Wrap every action method with the guardrail scrubber NOW, at instance
+        # creation time. Codex CLI calls action methods directly via the manifest
+        # (e.g. skill.read_email(...)) and never goes through run(), so we must
+        # apply scrubbing here to protect ALL callers.
+        for _action in self.ACTIONS:
+            _name = _action["name"]
+            _orig_fn = getattr(self.__class__, _name)
+            def _make_scrubbing_wrapper(fn):
+                def _wrapper(self_inner, *args, **kwargs):
+                    return GmailSkill._scrub(fn(self_inner, *args, **kwargs))
+                _wrapper.__name__ = fn.__name__
+                return _wrapper
+            # Bind to instance so only this instance is affected
+            import types
+            setattr(self, _name, types.MethodType(_make_scrubbing_wrapper(_orig_fn), self))
 
     @property
     def service(self):

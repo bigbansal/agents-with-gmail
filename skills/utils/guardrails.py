@@ -26,6 +26,13 @@ import os
 import re
 from typing import Any
 
+# Load .env BEFORE reading env vars so OPENAI_LOG_FILE is available at import time
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _load_dotenv()
+except ImportError:
+    pass
+
 logger = logging.getLogger(__name__)
 
 # ── Payload logger ─────────────────────────────────────────────────────────────
