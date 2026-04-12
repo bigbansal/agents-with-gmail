@@ -27,18 +27,29 @@ import re
 from typing import Any
 
 # Load .env BEFORE reading env vars so OPENAI_LOG_FILE is available at import time
+# Use the skill's own directory (not CWD, which varies depending on who runs it)
 try:
+    from pathlib import Path as _Path
     from dotenv import load_dotenv as _load_dotenv
-    _load_dotenv()
+    # guardrails.py lives at <skill_root>/skills/utils/guardrails.py
+    # → go up two levels to reach <skill_root>
+    _SKILL_ROOT = _Path(__file__).resolve().parent.parent.parent
+    _load_dotenv(dotenv_path=_SKILL_ROOT / ".env")
 except ImportError:
-    pass
+    _SKILL_ROOT = None
 
 logger = logging.getLogger(__name__)
 
 # ── Payload logger ─────────────────────────────────────────────────────────────
 # Set OPENAI_LOG_FILE=openai_payloads.log in .env to capture every outgoing
 # OpenAI request to a local file for inspection.
-_LOG_FILE: str = os.getenv("OPENAI_LOG_FILE", "")
+_LOG_FILE_RAW: str = os.getenv("OPENAI_LOG_FILE", "")
+# Resolve relative paths against the skill root so the file is always
+# created in a predictable place regardless of Codex's CWD.
+if _LOG_FILE_RAW and not os.path.isabs(_LOG_FILE_RAW) and _SKILL_ROOT:
+    _LOG_FILE: str = str(_SKILL_ROOT / _LOG_FILE_RAW)
+else:
+    _LOG_FILE = _LOG_FILE_RAW
 
 
 def _log_payload(label: str, payload: str) -> None:
