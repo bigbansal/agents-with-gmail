@@ -19,11 +19,31 @@ Detected & redacted categories
 """
 from __future__ import annotations
 
+import datetime
+import json
 import logging
+import os
 import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+# ── Payload logger ─────────────────────────────────────────────────────────────
+# Set OPENAI_LOG_FILE=openai_payloads.log in .env to capture every outgoing
+# OpenAI request to a local file for inspection.
+_LOG_FILE: str = os.getenv("OPENAI_LOG_FILE", "")
+
+
+def _log_payload(label: str, payload: str) -> None:
+    """Append a timestamped payload snapshot to OPENAI_LOG_FILE."""
+    if not _LOG_FILE:
+        return
+    ts = datetime.datetime.now().isoformat(timespec="seconds")
+    separator = "=" * 72
+    with open(_LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"\n{separator}\n[{ts}] {label}\n{separator}\n")
+        f.write(payload)
+        f.write("\n")
 
 # ── Pattern registry ───────────────────────────────────────────────────────────
 # Each entry: (name, compiled_pattern, replacement_label)
@@ -191,6 +211,11 @@ def scrub_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
         cleaned.append(msg)
 
+    # Log the exact payload that will be sent to OpenAI
+    _log_payload(
+        "scrub_messages() → OpenAI conversation payload",
+        json.dumps(cleaned, ensure_ascii=False, indent=2, default=str),
+    )
     return cleaned
 
 

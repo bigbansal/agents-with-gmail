@@ -41,12 +41,20 @@ def _truncate(text: str, max_chars: int = _MAX_BODY_CHARS) -> str:
 
 def _chat(system: str, user: str) -> str:
     """Send a single-turn chat request and return the assistant message."""
+    import json as _json
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]
+    # Log the exact payload being sent (text is already scrubbed before _chat is called)
+    from .guardrails import _log_payload
+    _log_payload(
+        f"summarizer._chat() → OpenAI [model={MODEL}]",
+        _json.dumps(messages, ensure_ascii=False, indent=2),
+    )
     response = _get_client().chat.completions.create(
         model=MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
+        messages=messages,
         temperature=0.3,
     )
     return response.choices[0].message.content.strip()
