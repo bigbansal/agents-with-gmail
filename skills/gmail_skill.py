@@ -33,6 +33,11 @@ from .utils.summarizer import (
     summarize_emails as _ai_summarize_emails,
     summarize_text as _ai_summarize_text,
 )
+from .utils.sentiment_analyzer import classify_email as _classify_email
+from .utils.auto_responder import (
+    analyse_and_respond as _analyse_and_respond,
+    scan_and_respond as _scan_and_respond,
+)
 
 load_dotenv()
 
@@ -134,6 +139,30 @@ class GmailSkill:
             "description": "Move a message to the Trash.",
             "parameters": {
                 "message_id": "Gmail message ID (required)",
+            },
+        },
+        {
+            "name": "classify_email_sentiment",
+            "description": "Classify the sentiment of an email as POSITIVE, NEGATIVE, COMPLIANCE or NEUTRAL.",
+            "parameters": {
+                "message_id": "Gmail message ID (required)",
+            },
+        },
+        {
+            "name": "auto_respond_email",
+            "description": "Analyse a single email's sentiment and auto-send a templated reply if it is positive, negative or compliance-related.",
+            "parameters": {
+                "message_id": "Gmail message ID (required)",
+                "dry_run": "If true, show what would be sent without actually sending (default false)",
+            },
+        },
+        {
+            "name": "auto_respond_scan",
+            "description": "Scan a batch of emails, classify each, and auto-reply with built-in templates for positive, negative and compliance emails.",
+            "parameters": {
+                "query": "Gmail search query (default: is:unread in:inbox)",
+                "max_results": "Max emails to scan (default 10)",
+                "dry_run": "If true, show what would be sent without actually sending (default false)",
             },
         },
     ]
@@ -425,3 +454,51 @@ class GmailSkill:
             userId="me", id=message_id
         ).execute()
         return {"status": "trashed", "message_id": message_id}
+
+    # ── Sentiment & auto-reply actions ────────────────────────────────────
+
+    def classify_email_sentiment(self, message_id: str) -> dict:
+        """Classify the sentiment of a single email."""
+        msg = parse_message(self.service, message_id)
+        classification = _classify_email(
+            subject=msg.get("subject", ""),
+            body=msg.get("body", ""),
+            sender=msg.get("sender", ""),
+            date=msg.get("date", ""),
+        )
+        return {
+            "message_id": message_id,
+            "subject": msg.get("subject", ""),
+            "sender": msg.get("sender", ""),
+            "classification": classification,
+        }
+
+    def auto_respond_email(self, message_id: str, dry_run: bool = False) -> dict:
+        """
+        Analyse one email and auto-send a templated reply if the sentiment
+        is POSITIVE, NEGATIVE or COMPLIANCE.
+        """
+        return _analyse_and_respond(
+            self.service,
+            message_id,
+            send_fn=self.send_email,
+            dry_run=bool(dry_run),
+        )
+
+    def auto_respond_scan(
+        self,
+        query: str = "is:unread in:inbox",
+        max_results: int = 10,
+        dry_run: bool = False,
+    ) -> dict:
+        """
+        Scan emails matching *query*, classify each, and auto-reply
+        with built-in templates where appropriate.
+        """
+        return _scan_and_respond(
+            self.service,
+            send_fn=self.send_email,
+            query=query,
+            max_results=int(max_results),
+            dry_run=bool(dry_run),
+        )

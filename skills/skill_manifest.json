@@ -126,6 +126,41 @@
         },
         "required": ["message_id"]
       }
+    },
+    {
+      "name": "classify_email_sentiment",
+      "description": "Classify the sentiment of an email as POSITIVE, NEGATIVE, COMPLIANCE or NEUTRAL using AI.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id": { "type": "string", "description": "Gmail message ID" }
+        },
+        "required": ["message_id"]
+      }
+    },
+    {
+      "name": "auto_respond_email",
+      "description": "Analyse a single email's sentiment and auto-send a templated reply if it is positive, negative or compliance-related.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message_id": { "type": "string",  "description": "Gmail message ID" },
+          "dry_run":    { "type": "boolean", "description": "Preview reply without sending (default false)" }
+        },
+        "required": ["message_id"]
+      }
+    },
+    {
+      "name": "auto_respond_scan",
+      "description": "Scan a batch of emails, classify each, and auto-reply with built-in templates for positive, negative and compliance-related emails.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query":       { "type": "string",  "description": "Gmail search query (default: is:unread in:inbox)" },
+          "max_results": { "type": "integer", "description": "Max emails to scan (default 10)" },
+          "dry_run":     { "type": "boolean", "description": "Preview replies without sending (default false)" }
+        }
+      }
     }
   ],
   "env_vars": [

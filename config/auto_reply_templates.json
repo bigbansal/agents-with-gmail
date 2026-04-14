@@ -1,0 +1,14 @@
+{
+  "NEGATIVE": {
+    "subject_prefix": "Re: [We're on it] ",
+    "body": "Dear {sender_name},\n\nThank you for reaching out. We sincerely apologise for the inconvenience you've experienced regarding \"{subject}\".\n\nYour concern has been flagged as high-priority and a member of our team will follow up with you within 24 hours with a resolution.\n\nWe value your feedback and are committed to making this right.\n\nBest regards,\nCustomer Support Team"
+  },
+  "POSITIVE": {
+    "subject_prefix": "Re: [Thank you!] ",
+    "body": "Dear {sender_name},\n\nThank you so much for your kind words regarding \"{subject}\"! We truly appreciate your positive feedback.\n\nIt's great to know that our efforts are making a difference. We'll share your message with the team — it means a lot to us.\n\nIf there's anything else we can help with, please don't hesitate to reach out.\n\nWarm regards,\nCustomer Success Team"
+  },
+  "COMPLIANCE": {
+    "subject_prefix": "Re: [Compliance Review Initiated] ",
+    "body": "Dear {sender_name},\n\nWe have received your email regarding \"{subject}\" and recognise that it raises a compliance-related concern.\n\nThis matter has been escalated to our Compliance & Legal team for immediate review. You can expect a formal acknowledgement within 48 business hours.\n\nIn the meantime, please refrain from sharing additional sensitive information over email. A secure channel will be provided if needed.\n\nThank you for bringing this to our attention.\n\nRegards,\nCompliance Office"
+  }
+}
